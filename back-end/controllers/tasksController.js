@@ -1,25 +1,29 @@
 //error handling in controllers as well
 const mongoose = require('mongoose')
 const Task = require('../model/task')
+const ErrorHandler = require('../utils/errorHandler')
+const catchAsynErrors = require('../middlewares/catchAsynErrors')
 
-
+//!TESTING Route
 exports.test = (req, res, next) => {
     res.status(200).json({
         message : 'testing route...'
     }) 
 }
- 
-exports.addTask = async (req, res, next) => {
+// Add todo
+exports.addTask = catchAsynErrors(async (req, res, next) => {
    const {name, description, progress, taskID} = req.body
    const task = await Task.create({name, description, progress, taskID})
+
    res.status(200).json({
       success : true,
       message : 'Task added in todo list successfully.',
       task
    })
-}
+})
 
-exports.addAllTasks = async (req, res, next) => {
+//Batch create todos
+exports.addAllTasks = catchAsynErrors(async (req, res, next) => {
     const {tasks} = req.body
     const insertedTasks = await Task.insertMany(tasks)
     res.status(200).json({
@@ -27,31 +31,33 @@ exports.addAllTasks = async (req, res, next) => {
        message : `${insertedTasks.length} tasks added in todo list successfully.`,
        insertedTasks
     })
- }
+})
 
-exports.getTask = async (req, res, next) => {
+//Get todo
+exports.getTask = catchAsynErrors( async (req, res, next) => {
     const {id : taskID} = req.params
     const task = await Task.findOne({taskID})
-
+   if(!task) {
+    return next(new ErrorHandler(`Could not find task with id:${taskID}`, 404))
+   }
     res.status(200).json({
         success : true,
         task
      })
-}
+})
 
-exports.getAllTasks = async (req, res, next) => {//In ascending order of time. i.e. latest first.
-
+//Sort todos by creation time (In ascending order of time. i.e. latest first).
+//Paging
+exports.getAllTasks = async (req, res, next) => {
     const pageNum = parseInt(req.query.page) || 1
-    const perPage = 2
-
+    const perPage = 4
     const tasks = await Task.find({})
                              .sort({createdAt : -1})
                              .skip((pageNum-1)* perPage)
                              .limit(perPage)
 
-
     if(tasks.length === 0){
-        console.log('no tasks found!')
+    return next(new ErrorHandler(`Could not find any task.`, 404))
     }
     res.status(200).json({
         success : true,
@@ -60,28 +66,27 @@ exports.getAllTasks = async (req, res, next) => {//In ascending order of time. i
     })
 }
 
-exports.updateTask = async (req, res, next) => {
+//Update todo
+exports.updateTask = catchAsynErrors((async (req, res, next) => {
     const {id : taskID} = req.params
-    
     const task = await Task.findOneAndUpdate({taskID}, {$set : req.body}, {new : true})
-
-    if(!task) {
-        console.log('task not fouhnd')
+    if(!task) { 
+        return next(new ErrorHandler('Could not update the task', 404))
     }
     res.status(200).json({
         success : true,
         message : 'Updated one task successfully.',
-        task
+        updatedTask : task
      })
-}
+}))
 
+//Delete Todo
 exports.deleteTask = async (req, res, next) => {
     const {id : taskID} = req.params
     
     const task = await Task.findOneAndDelete({taskID})
-
     if(!task) {
-        console.log('task not fouhnd')
+        return next(new ErrorHandler(`Could not find the task with id:${taskID}`, 404))
     }
     res.status(200).json({
         success : true,
@@ -89,6 +94,7 @@ exports.deleteTask = async (req, res, next) => {
      })
 }
 
+//Remove all todos
 exports.deleteAllTasks = async (req, res, next) => {
    await Task.deleteMany({})
    res.status(200).json({

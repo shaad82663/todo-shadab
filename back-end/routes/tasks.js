@@ -1,16 +1,16 @@
 const express = require('express')
 
-const {test, addTask, getTask, deleteTask, updateTask, getAllTasks, deleteAllTasks, addAllTasks} = require('../controllers/tasksController')
+const {test, addTask, addAllTasks, getTask, getAllTasks, updateTask, deleteTask, deleteAllTasks, } = require('../controllers/tasksController')
 
 const router = express.Router()
 
-router.route('/').get(test)
-router.route('/task/add').post(addTask)
-router.route('/task/add-all').post(addAllTasks)
-router.route('/task/get/:id').get(getTask) 
-router.route('/tasks/get/').get(getAllTasks)
-router.route('/task/delete/:id').delete(deleteTask)
-router.route('/tasks/delete/').delete(deleteAllTasks)
-router.route('/task/update/:id').put(updateTask)
+// router.route('/').get(test) 
+router.route('/add').post(addTask)
+router.route('/add-all').post(addAllTasks)
+router.route('/get/:id').get(getTask) 
+router.route('/get-all/').get(getAllTasks)
+router.route('/update/:id').put(updateTask)
+router.route('/delete/:id').delete(deleteTask)
+router.route('/delete-all/').delete(deleteAllTasks)
 
 module.exports = router

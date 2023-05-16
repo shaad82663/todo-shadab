@@ -23,6 +23,7 @@ const taskSchema = mongoose.Schema({
     type : String,
     required : [true, 'task id is required!'], 
     unique : [true, 'Task ID must be unique!'],
+    index : true,
     validate: {
         validator: function (value) {
           return /^[a-zA-Z]\d{3}$/.test(value);
