@@ -1,19 +1,20 @@
+//auth, autho
+//get, update
+//access token, refresh token -> passport.js, jwt
+//change password, update pasword, encrypt password 
+
 //error handling in controllers as well
 const mongoose = require('mongoose')
 const Task = require('../model/task')
 const ErrorHandler = require('../utils/errorHandler')
 const catchAsynErrors = require('../middlewares/catchAsynErrors')
 
-//!TESTING Route
-exports.test = (req, res, next) => {
-    res.status(200).json({
-        message : 'testing route...'
-    }) 
-}
+
 // Add todo
 exports.addTask = catchAsynErrors(async (req, res, next) => {
    const {name, description, progress, taskID} = req.body
-   const task = await Task.create({name, description, progress, taskID})
+   const user =  req.user
+   const task = await Task.create({name, description, progress, taskID, user})
 
    res.status(200).json({
       success : true,
@@ -37,6 +38,9 @@ exports.addAllTasks = catchAsynErrors(async (req, res, next) => {
 exports.getTask = catchAsynErrors( async (req, res, next) => {
     const {id : taskID} = req.params
     const task = await Task.findOne({taskID})
+    if(req.user._id.toString() !== task.user.toString()){
+       return next(new ErrorHandler('No right to given task id.', 404))
+    }
    if(!task) {
     return next(new ErrorHandler(`Could not find task with id:${taskID}`, 404))
    }
@@ -48,6 +52,7 @@ exports.getTask = catchAsynErrors( async (req, res, next) => {
 
 //Sort todos by creation time (In ascending order of time. i.e. latest first).
 //Paging
+//count, hasNext.
 exports.getAllTasks = async (req, res, next) => {
     const pageNum = parseInt(req.query.page) || 1
     const perPage = 4
@@ -55,6 +60,12 @@ exports.getAllTasks = async (req, res, next) => {
                              .sort({createdAt : -1})
                              .skip((pageNum-1)* perPage)
                              .limit(perPage)
+    const resTasks = []
+    for(task of tasks){
+        if(req.user._id.toString() === task.user.toString()){
+            resTasks.push(task)
+         }
+    }
 
     if(tasks.length === 0){
     return next(new ErrorHandler(`Could not find any task.`, 404))
@@ -62,7 +73,7 @@ exports.getAllTasks = async (req, res, next) => {
     res.status(200).json({
         success : true,
         count : tasks.length,
-        tasks
+        resTasks
     })
 }
 
@@ -73,6 +84,9 @@ exports.updateTask = catchAsynErrors((async (req, res, next) => {
     if(!task) { 
         return next(new ErrorHandler('Could not update the task', 404))
     }
+    if(req.user._id.toString() !== task.user.toString()){
+        return next(new ErrorHandler('No right to given task id.', 404))
+     }
     res.status(200).json({
         success : true,
         message : 'Updated one task successfully.',
@@ -88,6 +102,9 @@ exports.deleteTask = async (req, res, next) => {
     if(!task) {
         return next(new ErrorHandler(`Could not find the task with id:${taskID}`, 404))
     }
+    if(req.user._id.toString() !== task.user.toString()){
+        return next(new ErrorHandler('No right to given task id.', 404))
+     }
     res.status(200).json({
         success : true,
         message : 'Deleted one task successfully.',

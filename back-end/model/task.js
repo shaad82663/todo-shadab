@@ -21,7 +21,7 @@ const taskSchema = mongoose.Schema({
    },
    taskID : {
     type : String,
-    required : [true, 'task id is required!'], 
+    required : [true, 'task id is required!'],
     unique : [true, 'Task ID must be unique!'],
     index : true,
     validate: {
@@ -30,6 +30,10 @@ const taskSchema = mongoose.Schema({
         },
         message: 'Task ID must be in the format:<alph><digit><digit><digit>'
       }
+   },
+   user : {
+    type : mongoose.Types.ObjectId,
+    required : [true, 'User is missing in task.']
    },
    createdAt : {
     type : Date,

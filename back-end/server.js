@@ -1,9 +1,12 @@
+//Setting up config file.  -> on top coz of passport
+const dotenv = require('dotenv')
+dotenv.config({path : 'back-end/config/config.env'})
+
+
+
 const app = require('./app')
 const connectDB = require('./config/database')
 
-//Setting up config file.
-const dotenv = require('dotenv')
-dotenv.config({path : 'back-end/config/config.env'})
 
 //connecting db
 connectDB()
