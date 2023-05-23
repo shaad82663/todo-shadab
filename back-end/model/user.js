@@ -20,6 +20,10 @@ const userSchema = new mongoose.Schema({
     type : String,
     default : "user"
    },
+   refreshToken : {
+     type : String,
+     default : null
+   },
   createdAt : {
       type : Date,
       default : Date.now
@@ -36,17 +40,19 @@ userSchema.pre('save', async function (next) {
 })
 
 //Return JWT token
-userSchema.methods.getJwtToken = function() {  //paylod = _id + secret key.
+userSchema.methods.getJwtToken = function() {  //paylod = _id 
     return jwt.sign({id : this._id}, process.env.JWT_SECRET, {
         expiresIn : process.env.JWT_EXPIRES_TIME
     }) 
 }
 
 //Refresh JWT token
-userSchema.methods.getJwtRefreshToken = function() {  //paylod = _id + secret key.
-    return jwt.sign({id : this._id}, process.env.JWT_REFRESH_SECRET, {
+userSchema.methods.getJwtRefreshToken = function() {  //paylod = _id
+    const refreshToken = jwt.sign({id : this._id}, process.env.JWT_REFRESH_SECRET, {
         expiresIn : process.env.JWT_REFRESH_EXPIRES_TIME
     }) 
+    this.refreshToken = refreshToken
+    return refreshToken
 }
 
 //Compare user password
