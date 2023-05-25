@@ -26,6 +26,9 @@ exports.addTask = catchAsynErrors(async (req, res, next) => {
 //Batch create todos
 exports.addAllTasks = catchAsynErrors(async (req, res, next) => {
     const {tasks} = req.body
+    for(const task of tasks){
+        task.user = req.user
+    }
     const insertedTasks = await Task.insertMany(tasks)
     res.status(200).json({
        success : true,
