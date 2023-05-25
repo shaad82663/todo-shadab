@@ -55,11 +55,11 @@ exports.getTask = catchAsynErrors( async (req, res, next) => {
 //count, hasNext.
 exports.getAllTasks = async (req, res, next) => {
     const pageNum = parseInt(req.query.page) || 1
-    const perPage = 4
+    const limit = parseInt(req.query.limit)  || 3
     const tasks = await Task.find({})
                              .sort({createdAt : -1})
-                             .skip((pageNum-1)* perPage)
-                             .limit(perPage)
+                             .skip((pageNum-1)* limit)
+                             .limit(limit)
     const resTasks = []
     for(task of tasks){
         if(req.user._id.toString() === task.user.toString()){
@@ -72,7 +72,7 @@ exports.getAllTasks = async (req, res, next) => {
     }
     res.status(200).json({
         success : true,
-        count : tasks.length,
+        count : resTasks.length,
         resTasks
     })
 }

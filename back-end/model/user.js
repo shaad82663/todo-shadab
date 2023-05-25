@@ -20,10 +20,6 @@ const userSchema = new mongoose.Schema({
     type : String,
     default : "user"
    },
-   refreshToken : {
-     type : String,
-     default : null
-   },
   createdAt : {
       type : Date,
       default : Date.now

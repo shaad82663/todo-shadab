@@ -57,24 +57,6 @@ exports.logout = catchAsyncErrors(async (req, res, next) => {
   })
 })
 
-
-//To get any  user for a list of uid     GET =>  /user/:id
-// exports.getUser = catchAsyncErrors (async (req, res, next) => {
-//     const id= req.params.id
-//     const user = await User.findById(id)
-
-//     if(!user) {
-//         return next(new ErrorHandler(`No user found for id ${id}`), 404)
-//     }
-
-//     res.status(200).json({
-//         success : true,
-//         user
-//     })
-// })
-
-//getUser -> self
-
 exports.getUser = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
@@ -95,7 +77,7 @@ exports.updateUser = catchAsyncErrors(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    updatedUser,
+    message : 'Updated one user successfully'
   });
 });
 
@@ -127,9 +109,9 @@ exports.changePassword = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
-exports.refreshToken = catchAsyncErrors( async (req, res, next) => {
-  const { refresh_token } = req.cookies; 
-    
+exports.getRefreshToken = catchAsyncErrors( async (req, res, next) => {
+  const refresh_token = req.headers.authorization.split(' ')[1]
+  console.log('ref '+refresh_token)  
   if(!refresh_token) {
       return next(new ErrorHandler("No refresh token found.", 401));
   }
